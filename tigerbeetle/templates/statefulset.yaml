@@ -30,29 +30,29 @@ spec:
       serviceAccountName: {{ include "tigerbeetle.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.statefulset.securityContext | nindent 8 }}
-      initContainers:
-        - name: init-tigerbeetle
-          image: "{{ .Values.statefulset.image.repository }}:{{ .Values.statefulset.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.statefulset.image.pullPolicy }}
-          command:
-            - /bin/sh
-            - -c
-            - | 
-              set -ex
-              REPLICA=${HOSTNAME##*-} 
-              FMT_CLUSTER=$(echo $CLUSTER | awk '{ printf("%010d\n", $1) }')
-              FMT_REPLICA=$(echo $REPLICA | awk '{ printf("%03d\n", $1) }')
-              ls /var/lib/tigerbeetle
-              DATA_FILE=/var/lib/tigerbeetle/cluster_${FMT_CLUSTER}_replica_${FMT_REPLICA}.tigerbeetle
-              if [ ! -f "$DATA_FILE" ]; then 
-                /opt/beta-beetle/tigerbeetle init --cluster=$CLUSTER --replica=$REPLICA --directory=/var/lib/tigerbeetle; 
-              fi
-          env:
-            - name: CLUSTER
-              value: "{{ .Values.statefulset.clusterId }}"
-          volumeMounts:
-            - name: data
-              mountPath: /var/lib/tigerbeetle
+      # initContainers:
+      #   - name: init-tigerbeetle
+      #     image: "{{ .Values.statefulset.image.repository }}:{{ .Values.statefulset.image.tag | default .Chart.AppVersion }}"
+      #     imagePullPolicy: {{ .Values.statefulset.image.pullPolicy }}
+      #     command:
+      #       - /bin/sh
+      #       - -c
+      #       - | 
+      #         set -ex
+      #         REPLICA=${HOSTNAME##*-} 
+      #         FMT_CLUSTER=$(echo $CLUSTER | awk '{ printf("%010d\n", $1) }')
+      #         FMT_REPLICA=$(echo $REPLICA | awk '{ printf("%03d\n", $1) }')
+      #         ls /var/lib/tigerbeetle
+      #         DATA_FILE=/var/lib/tigerbeetle/cluster_${FMT_CLUSTER}_replica_${FMT_REPLICA}.tigerbeetle
+      #         if [ ! -f "$DATA_FILE" ]; then 
+      #           /opt/beta-beetle/tigerbeetle init --cluster=$CLUSTER --replica=$REPLICA --directory=/var/lib/tigerbeetle; 
+      #         fi
+      #     env:
+      #       - name: CLUSTER
+      #         value: "{{ .Values.statefulset.clusterId }}"
+      #     volumeMounts:
+      #       - name: data
+      #         mountPath: /var/lib/tigerbeetle
     {{- if or .Values.statefulset.nodeAffinity .Values.statefulset.podAffinity .Values.statefulset.podAntiAffinity }}
       affinity:
       {{- with .Values.statefulset.nodeAffinity }}
@@ -125,24 +125,24 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.statefulset.image.repository }}:{{ .Values.statefulset.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.statefulset.image.pullPolicy }}
-          command:
-            - /bin/sh
-            - -c
-            - |
-              set -ex; 
-              REPLICA=${HOSTNAME##*-}
-              ADDRESSES=""
-              for n in $(seq 0 {{sub .Values.statefulset.replicas 1}})
-              do
-                if [ "$n" != "$REPLICA" ]
-                then 
-                  ADDRESSES="$ADDRESSES,127.0.0.1:300$n"
-                else
-                  ADDRESSES="$ADDRESSES,0.0.0.0:4242"
-                fi
-              done
-              ADDRESSES=${ADDRESSES#?}
-              /opt/beta-beetle/tigerbeetle start --cluster=$CLUSTER --replica=$REPLICA --directory=/var/lib/tigerbeetle --addresses=$ADDRESSES
+          # command:
+          #   - /bin/sh
+          #   - -c
+          #   - |
+          #     set -ex; 
+          #     REPLICA=${HOSTNAME##*-}
+          #     ADDRESSES=""
+          #     for n in $(seq 0 {{sub .Values.statefulset.replicas 1}})
+          #     do
+          #       if [ "$n" != "$REPLICA" ]
+          #       then 
+          #         ADDRESSES="$ADDRESSES,127.0.0.1:300$n"
+          #       else
+          #         ADDRESSES="$ADDRESSES,0.0.0.0:4242"
+          #       fi
+          #     done
+          #     ADDRESSES=${ADDRESSES#?}
+          #     /tigerbeetle start --cluster=$CLUSTER --replica=$REPLICA --directory=/var/lib/tigerbeetle --addresses=$ADDRESSES
           env:
             - name: CLUSTER
               value: "{{ .Values.statefulset.clusterId }}"
@@ -214,7 +214,7 @@ spec:
         accessModes: ["ReadWriteOnce"]
       {{- if .Values.storage.persistentVolume.storageClass }}
       {{- if (eq "-" .Values.storage.persistentVolume.storageClass) }}
-        storageClassName: ""
+        storageClassName: "do-block-storage"
       {{- else }}
         storageClassName: {{ .Values.storage.persistentVolume.storageClass | quote}}
       {{- end }}
