@@ -10,7 +10,7 @@ serviceAccount:
   # Specifies whether a service account should be created
   create: true
   # Annotations to add to the service account
-  annotations: {}
+  # annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
@@ -20,11 +20,13 @@ service:
   port: 80
 
 statefulset:
-  clusterId: "0"
+  replicas: 3
+  clusterId: "1"
+  namespace: "tigerbeetle-dev"
 
   image:
     repository: ghcr.io/tigerbeetle/tigerbeetle
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: "0.16.17"
 
@@ -34,7 +36,6 @@ statefulset:
     # Overrides the image tag whose default is the chart appVersion.
     tag: "1.25.4"
 
-  replicas: 2
   updateStrategy:
     type: RollingUpdate
   podManagementPolicy: Parallel
@@ -146,7 +147,7 @@ storage:
   persistentVolume:
     enabled: false
 
-    size: 512Mi
+    size: 10Gi
 
     # If defined, then `storageClassName: <storageClass>`.
     # If set to "-", then `storageClassName: ""`, which disables dynamic
@@ -154,7 +155,9 @@ storage:
     # If undefined or empty (default), then no `storageClassName` spec is set,
     # so the default provisioner will be chosen (gp2 on AWS, standard on
     # GKE, AWS & OpenStack).
+
     storageClass: "do-block-storage"
+    # storageClass: "standard"b
 
     # Additional labels to apply to the created PersistentVolumeClaims.
     labels: {}
